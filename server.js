@@ -9,9 +9,12 @@ import bodyParser from "body-parser";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { getPalette, getColor } from "colorthief";
+import * as dotenv from "dotenv";
+
 // import auth from "/Middleware/AuthMidlleware";
 
 //app config
+dotenv.config();
 const port = 9000;
 const app = express();
 
@@ -68,18 +71,8 @@ const songImgStorage = multer.diskStorage({
 const songImgUpload = multer({ storage: songImgStorage });
 
 //DB Config
-const DbName = "musickDB2";
-
-mongoose
-  .connect(`mongodb://127.0.0.1:27017/${DbName}`, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-  })
-  .then(() => {
-    console.log("connected to the Database");
-  });
+const passwordDb = process.env.DB_PASSWORD;
+const dbUrl = `mongodb+srv://sasindudilshara57:${passwordDb}@cluster0.gl9tvuq.mongodb.net/?retryWrites=true&w=majority`;
 
 //COLLECTIONS
 
@@ -245,6 +238,7 @@ app.post("/check/username", (req, res) => {
 
 //Login
 app.post("/user/login", (req, res) => {
+  console.log("came here");
   const passwordAsInput = req.body.password;
   Artist.find({ userName: req.body.userName }, (err, foundArtist) => {
     if (err) {
@@ -942,6 +936,16 @@ app.post(
 // });
 
 //app listen
-app.listen(port, () => {
-  console.log(`server started on port ${port}`);
-});
+mongoose
+  .connect(dbUrl, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+  })
+  .then(() => {
+    console.log("connected to the Database");
+    app.listen(port, () => {
+      console.log(`server started on port ${port}`);
+    });
+  });
